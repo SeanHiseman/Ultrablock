@@ -1,0 +1,8 @@
+/.claude
+/.gradle
+/android-sdk
+/gradle-8.2
+/gradle
+gradle-8.2-bin.zip
+cmdline-tools.zip
+/app/build
