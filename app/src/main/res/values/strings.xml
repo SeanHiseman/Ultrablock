@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ultrablock</string>
+    <string name="accessibility_service_description">Ultrablock monitors which apps you open to help block distracting apps during your focus time. This service only checks which app is in the foreground and does not read any content.</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_apps">Apps</string>
+    <string name="nav_schedule">Schedule</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Home Screen -->
+    <string name="home_title">Ultrablock</string>
+    <string name="blocking_active">Blocking Active</string>
+    <string name="blocking_inactive">Blocking Inactive</string>
+    <string name="apps_blocked">Apps Blocked</string>
+    <string name="money_spent">Money Spent</string>
+    <string name="time_saved">Time Saved</string>
+
+    <!-- App Selection -->
+    <string name="select_apps_title">Select Apps to Block</string>
+    <string name="search_apps">Search apps</string>
+    <string name="no_apps_found">No apps found</string>
+
+    <!-- Schedule -->
+    <string name="schedule_title">Block Schedule</string>
+    <string name="add_schedule">Add Schedule</string>
+    <string name="start_time">Start Time</string>
+    <string name="end_time">End Time</string>
+    <string name="days_of_week">Days</string>
+    <string name="schedule_enabled">Enabled</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="hourly_rate">Hourly Rate</string>
+    <string name="hourly_rate_description">How much is your time worth per hour?</string>
+    <string name="payment_method">Payment Method</string>
+    <string name="add_payment_method">Add Payment Method</string>
+    <string name="payment_method_added">Card ending in %s</string>
+    <string name="permissions">Permissions</string>
+    <string name="grant_permissions">Grant Required Permissions</string>
+
+    <!-- Blocker Overlay -->
+    <string name="app_blocked">App Blocked</string>
+    <string name="blocked_message">%s is blocked during your focus time</string>
+    <string name="unblock_for">Unblock for %d minutes</string>
+    <string name="cost_label">Cost: $%.2f</string>
+    <string name="unblock_button">Unblock Now</string>
+    <string name="go_back">Go Back</string>
+    <string name="payment_processing">Processing payment…</string>
+    <string name="payment_failed">Payment failed. Please try again.</string>
+    <string name="no_payment_method">Please add a payment method in settings first.</string>
+
+    <!-- Permissions -->
+    <string name="usage_access_permission">Usage Access</string>
+    <string name="usage_access_description">Required to detect which apps you open</string>
+    <string name="overlay_permission">Display Over Apps</string>
+    <string name="overlay_description">Required to show the blocker screen</string>
+    <string name="accessibility_permission">Accessibility Service</string>
+    <string name="accessibility_description">Required to monitor app switches</string>
+    <string name="notification_permission">Notifications</string>
+    <string name="notification_description">Required for service notifications</string>
+
+    <!-- Days of Week -->
+    <string name="monday">Mon</string>
+    <string name="tuesday">Tue</string>
+    <string name="wednesday">Wed</string>
+    <string name="thursday">Thu</string>
+    <string name="friday">Fri</string>
+    <string name="saturday">Sat</string>
+    <string name="sunday">Sun</string>
+</resources>
