@@ -1,2 +1,2 @@
 # Ultrablock
-Paid screen time blocker
+Screen time blocker for Android
