@@ -1,2 +1,2 @@
 # Ultrablock
-Screen time blocker for Android
+Screen time app blocker for Android
