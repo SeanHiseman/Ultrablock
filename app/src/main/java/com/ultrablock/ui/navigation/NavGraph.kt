@@ -3,6 +3,7 @@ package com.ultrablock.ui.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Settings
@@ -26,11 +27,13 @@ import com.ultrablock.ui.screens.appselection.AppSelectionScreen
 import com.ultrablock.ui.screens.home.HomeScreen
 import com.ultrablock.ui.screens.schedule.ScheduleScreen
 import com.ultrablock.ui.screens.settings.SettingsScreen
+import com.ultrablock.ui.screens.social.SocialScreen
 
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
     object Home : Screen("home", "Home", Icons.Default.Home)
     object Apps : Screen("apps", "Apps", Icons.Default.Apps)
     object Schedule : Screen("schedule", "Schedule", Icons.Default.Schedule)
+    object Social : Screen("social", "Social", Icons.Default.Group)
     object Settings : Screen("settings", "Settings", Icons.Default.Settings)
 }
 
@@ -38,6 +41,7 @@ val bottomNavItems = listOf(
     Screen.Home,
     Screen.Apps,
     Screen.Schedule,
+    Screen.Social,
     Screen.Settings
 )
 
@@ -46,27 +50,18 @@ fun MainNavGraph(
     navController: NavHostController = rememberNavController()
 ) {
     Scaffold(
-        bottomBar = {
-            BottomNavigationBar(navController = navController)
-        }
+        bottomBar = { BottomNavigationBar(navController = navController) }
     ) { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = Screen.Home.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(Screen.Home.route) {
-                HomeScreen()
-            }
-            composable(Screen.Apps.route) {
-                AppSelectionScreen()
-            }
-            composable(Screen.Schedule.route) {
-                ScheduleScreen()
-            }
-            composable(Screen.Settings.route) {
-                SettingsScreen()
-            }
+            composable(Screen.Home.route) { HomeScreen() }
+            composable(Screen.Apps.route) { AppSelectionScreen() }
+            composable(Screen.Schedule.route) { ScheduleScreen() }
+            composable(Screen.Social.route) { SocialScreen() }
+            composable(Screen.Settings.route) { SettingsScreen() }
         }
     }
 }
@@ -84,9 +79,7 @@ private fun BottomNavigationBar(navController: NavHostController) {
                 selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                 onClick = {
                     navController.navigate(screen.route) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-                        }
+                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                         launchSingleTop = true
                         restoreState = true
                     }

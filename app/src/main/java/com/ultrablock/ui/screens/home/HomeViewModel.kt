@@ -9,13 +9,13 @@ import androidx.lifecycle.viewModelScope
 import com.ultrablock.data.preferences.UserPreferences
 import com.ultrablock.data.repository.AppRepository
 import com.ultrablock.data.repository.PaymentRepository
+import com.ultrablock.data.repository.UsageRepository
 import com.ultrablock.service.AppBlockerService
 import com.ultrablock.service.AppMonitorAccessibilityService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -29,15 +29,28 @@ data class HomeUiState(
     val unblockCount: Int = 0,
     val hasAllPermissions: Boolean = false,
     val isAccessibilityEnabled: Boolean = false,
-    val hourlyRateDollars: Double = 20.0
-)
+    val hourlyRateDollars: Double = 20.0,
+    // time-cost tracking
+    val todayBlockAttempts: Int = 0,
+    val todaySuccessfulBlocks: Int = 0,
+    val weekBlockAttempts: Int = 0,
+    val weekSuccessfulBlocks: Int = 0,
+    val todayTimeSavedMinutes: Int = 0
+) {
+    val todaySuccessRate: Float
+        get() = if (todayBlockAttempts == 0) 1f else todaySuccessfulBlocks.toFloat() / todayBlockAttempts
+
+    val estimatedTimeSavedValue: Double
+        get() = (todayTimeSavedMinutes / 60.0) * hourlyRateDollars
+}
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val application: Application,
     private val userPreferences: UserPreferences,
     private val appRepository: AppRepository,
-    private val paymentRepository: PaymentRepository
+    private val paymentRepository: PaymentRepository,
+    private val usageRepository: UsageRepository
 ) : AndroidViewModel(application) {
 
     private val _permissionCheckTrigger = MutableStateFlow(0)
@@ -49,6 +62,10 @@ class HomeViewModel @Inject constructor(
         paymentRepository.getTotalUnblockedMinutes(),
         paymentRepository.getUnblockCount(),
         userPreferences.hourlyRateCents,
+        usageRepository.getTodayBlockAttempts(),
+        usageRepository.getTodaySuccessfulBlocks(),
+        usageRepository.getWeekBlockAttempts(),
+        usageRepository.getWeekSuccessfulBlocks(),
         _permissionCheckTrigger
     ) { values ->
         val blockingEnabled = values[0] as Boolean
@@ -57,6 +74,13 @@ class HomeViewModel @Inject constructor(
         val totalUnblockedMinutes = values[3] as Int
         val unblockCount = values[4] as Int
         val hourlyRateCents = values[5] as Int
+        val todayBlockAttempts = values[6] as Int
+        val todaySuccessfulBlocks = values[7] as Int
+        val weekBlockAttempts = values[8] as Int
+        val weekSuccessfulBlocks = values[9] as Int
+
+        // Estimate time saved: successful blocks × avg session length (assume 15 min each)
+        val todayTimeSavedMinutes = todaySuccessfulBlocks * 15
 
         HomeUiState(
             blockingEnabled = blockingEnabled,
@@ -66,7 +90,12 @@ class HomeViewModel @Inject constructor(
             unblockCount = unblockCount,
             hasAllPermissions = checkAllPermissions(),
             isAccessibilityEnabled = AppMonitorAccessibilityService.isServiceRunning,
-            hourlyRateDollars = hourlyRateCents / 100.0
+            hourlyRateDollars = hourlyRateCents / 100.0,
+            todayBlockAttempts = todayBlockAttempts,
+            todaySuccessfulBlocks = todaySuccessfulBlocks,
+            weekBlockAttempts = weekBlockAttempts,
+            weekSuccessfulBlocks = weekSuccessfulBlocks,
+            todayTimeSavedMinutes = todayTimeSavedMinutes
         )
     }.stateIn(
         scope = viewModelScope,
@@ -77,11 +106,7 @@ class HomeViewModel @Inject constructor(
     fun toggleBlocking(enabled: Boolean) {
         viewModelScope.launch {
             userPreferences.setBlockingEnabled(enabled)
-            if (enabled) {
-                startBlockerService()
-            } else {
-                stopBlockerService()
-            }
+            if (enabled) startBlockerService() else stopBlockerService()
         }
     }
 
@@ -102,26 +127,18 @@ class HomeViewModel @Inject constructor(
         application.stopService(Intent(application, AppBlockerService::class.java))
     }
 
-    private fun checkAllPermissions(): Boolean {
-        return hasOverlayPermission() && hasAccessibilityPermission()
-    }
+    private fun checkAllPermissions() = hasOverlayPermission() && hasAccessibilityPermission()
+    private fun hasOverlayPermission() = Settings.canDrawOverlays(application)
+    private fun hasAccessibilityPermission() = AppMonitorAccessibilityService.isServiceRunning
 
-    private fun hasOverlayPermission(): Boolean {
-        return Settings.canDrawOverlays(application)
-    }
-
-    private fun hasAccessibilityPermission(): Boolean {
-        return AppMonitorAccessibilityService.isServiceRunning
-    }
-
-    fun formatTimeSaved(minutes: Int): String {
-        return when {
-            minutes < 60 -> "$minutes min"
-            else -> {
-                val hours = minutes / 60
-                val mins = minutes % 60
-                if (mins > 0) "${hours}h ${mins}m" else "${hours}h"
-            }
+    fun formatTime(minutes: Int): String = when {
+        minutes < 60 -> "${minutes}m"
+        else -> {
+            val h = minutes / 60
+            val m = minutes % 60
+            if (m > 0) "${h}h ${m}m" else "${h}h"
         }
     }
+
+    fun formatTimeSaved(minutes: Int): String = formatTime(minutes)
 }

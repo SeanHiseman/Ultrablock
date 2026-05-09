@@ -11,17 +11,24 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Savings
+import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -31,6 +38,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -53,7 +61,6 @@ fun HomeScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    // Refresh permissions when screen resumes
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             viewModel.refreshPermissions()
@@ -67,38 +74,30 @@ fun HomeScreen(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Header
         Text(
             text = "Ultrablock",
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold
         )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = "Break your phone addiction",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
-        // Main toggle card
+        // ── Main blocking toggle ───────────────────────────────────────────
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
-                containerColor = if (uiState.blockingEnabled) {
-                    UnblockedGreen.copy(alpha = 0.1f)
-                } else {
-                    MaterialTheme.colorScheme.surfaceVariant
-                }
+                containerColor = if (uiState.blockingEnabled) UnblockedGreen.copy(alpha = 0.1f)
+                else MaterialTheme.colorScheme.surfaceVariant
             )
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
+                modifier = Modifier.fillMaxWidth().padding(20.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -109,11 +108,8 @@ fun HomeScreen(
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = if (uiState.blockingEnabled) {
-                            "Protecting you from distractions"
-                        } else {
-                            "Turn on to start blocking"
-                        },
+                        text = if (uiState.blockingEnabled) "Protecting you from distractions"
+                        else "Turn on to start blocking",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -130,27 +126,16 @@ fun HomeScreen(
             }
         }
 
-        // Permissions warning
+        // ── Permissions warning ────────────────────────────────────────────
         if (!uiState.hasAllPermissions) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = BlockedRed.copy(alpha = 0.1f)
-                )
+                colors = CardDefaults.cardColors(containerColor = BlockedRed.copy(alpha = 0.1f))
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Warning,
-                            contentDescription = null,
-                            tint = BlockedRed,
-                            modifier = Modifier.size(24.dp)
-                        )
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Warning, contentDescription = null, tint = BlockedRed, modifier = Modifier.size(24.dp))
                         Text(
                             text = "  Permissions Required",
                             style = MaterialTheme.typography.titleMedium,
@@ -159,54 +144,86 @@ fun HomeScreen(
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Grant permissions in Settings to enable app blocking.",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    Text("Grant permissions in Settings to enable app blocking.", style = MaterialTheme.typography.bodyMedium)
                     Spacer(modifier = Modifier.height(12.dp))
                     Button(
-                        onClick = {
-                            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                            context.startActivity(intent)
-                        },
+                        onClick = { context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) },
                         modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Open Accessibility Settings")
-                    }
+                    ) { Text("Open Accessibility Settings") }
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(
                         onClick = {
-                            val intent = Intent(
-                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                android.net.Uri.parse("package:${context.packageName}")
+                            context.startActivity(
+                                Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, android.net.Uri.parse("package:${context.packageName}"))
                             )
-                            context.startActivity(intent)
                         },
                         modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Allow Display Over Apps")
-                    }
+                    ) { Text("Allow Display Over Apps") }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
-        // Stats section
+        // ── Today's focus score ────────────────────────────────────────────
+        if (uiState.todayBlockAttempts > 0) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.TrendingUp, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Today's Focus Score", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                        }
+                        Text(
+                            text = "${(uiState.todaySuccessRate * 100).toInt()}%",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = successRateColor(uiState.todaySuccessRate)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LinearProgressIndicator(
+                        progress = uiState.todaySuccessRate,
+                        modifier = Modifier.fillMaxWidth().height(8.dp),
+                        color = successRateColor(uiState.todaySuccessRate),
+                        trackColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(
+                            text = "${uiState.todaySuccessfulBlocks} blocks held",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = UnblockedGreen
+                        )
+                        Text(
+                            text = "${uiState.todayBlockAttempts - uiState.todaySuccessfulBlocks} bypassed",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = BlockedRed
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        // ── Stats grid ─────────────────────────────────────────────────────
         Text(
             text = "Statistics",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.fillMaxWidth()
         )
+        Spacer(modifier = Modifier.height(10.dp))
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Stats cards row
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             StatCard(
                 modifier = Modifier.weight(1f),
                 icon = Icons.Default.Apps,
@@ -218,56 +235,82 @@ fun HomeScreen(
                 modifier = Modifier.weight(1f),
                 icon = Icons.Default.AttachMoney,
                 value = "$${String.format("%.2f", uiState.totalSpent)}",
-                label = "Spent",
+                label = "Total Spent",
+                iconTint = MoneyGreen
+            )
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            StatCard(
+                modifier = Modifier.weight(1f),
+                icon = Icons.Default.AccessTime,
+                value = viewModel.formatTime(uiState.todayTimeSavedMinutes),
+                label = "Est. Time Saved",
+                iconTint = TimePurple
+            )
+            StatCard(
+                modifier = Modifier.weight(1f),
+                icon = Icons.Default.Savings,
+                value = "$${String.format("%.2f", uiState.estimatedTimeSavedValue)}",
+                label = "Value Saved",
                 iconTint = MoneyGreen
             )
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            StatCard(
-                modifier = Modifier.weight(1f),
-                icon = Icons.Default.AccessTime,
-                value = viewModel.formatTimeSaved(uiState.totalUnblockedMinutes),
-                label = "Time Bought",
-                iconTint = TimePurple
-            )
-            StatCard(
-                modifier = Modifier.weight(1f),
-                icon = Icons.Default.AttachMoney,
-                value = "$${String.format("%.0f", uiState.hourlyRateDollars)}/hr",
-                label = "Your Rate",
-                iconTint = MoneyGreen
-            )
+        // ── Weekly summary ─────────────────────────────────────────────────
+        if (uiState.weekBlockAttempts > 0) {
+            val weekRate = if (uiState.weekBlockAttempts == 0) 1f
+            else uiState.weekSuccessfulBlocks.toFloat() / uiState.weekBlockAttempts
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = if (weekRate >= 0.7f) Icons.Default.CheckCircle else Icons.Default.Block,
+                        contentDescription = null,
+                        tint = successRateColor(weekRate),
+                        modifier = Modifier.size(32.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column {
+                        Text("This Week", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            text = "${uiState.weekSuccessfulBlocks} of ${uiState.weekBlockAttempts} block attempts held",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = "${(weekRate * 100).toInt()}% success rate",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = successRateColor(weekRate)
+                        )
+                    }
+                }
+            }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
-        // How it works section
+        // ── How it works ───────────────────────────────────────────────────
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            )
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text(
-                    text = "How It Works",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("How It Works", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "1. Select apps you want to block\n" +
                             "2. Set your block schedule\n" +
-                            "3. Configure your hourly rate\n" +
-                            "4. Pay to unblock during focus time",
+                            "3. Choose a friction level in Settings\n" +
+                            "4. Add accountability partners in the Social tab",
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -285,33 +328,22 @@ private fun StatCard(
 ) {
     Card(
         modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = iconTint,
-                modifier = Modifier.size(28.dp)
-            )
+            Icon(imageVector = icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(28.dp))
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = value,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Text(text = value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(text = label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
+}
+
+private fun successRateColor(rate: Float): Color = when {
+    rate >= 0.8f -> UnblockedGreen
+    rate >= 0.5f -> Color(0xFFFFB74D)
+    else -> BlockedRed
 }

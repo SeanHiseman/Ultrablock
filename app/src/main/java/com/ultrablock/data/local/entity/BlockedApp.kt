@@ -9,5 +9,7 @@ data class BlockedApp(
     val packageName: String,
     val appName: String,
     val isBlocked: Boolean = true,
-    val temporarilyUnblockedUntil: Long? = null
+    val temporarilyUnblockedUntil: Long? = null,
+    // null = use global friction level from settings
+    val frictionLevel: String? = null
 )
